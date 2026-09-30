@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ВК поиск — случайные дни рождения</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="wrap">
+    <header>
+        <div class="logo"><b>ВК</b>поиск</div>
+        <a class="star" id="star" target="_blank" rel="noopener" href="#">
+            <span><svg width="16" height="16" viewBox="0 0 24 24"><path
+                    d="M12 2l3 6.9 7.5.7-5.7 5 1.7 7.4L12 18.1 5.5 22l1.7-7.4-5.7-5 7.5-.7z"/></svg>Поставить лайк</span><span
+                id="stars">…</span>
+        </a>
+    </header>
+
+    <section class="hero">
+        <h1>Находите людей по случайному дню рождения</h1>
+        <p>Выберите пол, возраст и города — сайт подберёт готовую ссылку на поиск ВКонтакте с новой датой рождения. Дни,
+            которые вы уже проверили, больше не повторяются.</p>
+    </section>
+
+    <section class="card">
+        <h2>Настройки</h2>
+        <div class="row">
+            <label class="f">Пол<select id="sex">
+                <option value="">Выберите</option>
+                <option value="female">Женский</option>
+                <option value="male">Мужской</option>
+            </select></label>
+            <label class="f">Возраст от<select id="from"></select></label>
+            <label class="f">Возраст до<select id="to"></select></label>
+        </div>
+        <h2 style="margin-top:22px">Города</h2>
+        <ul class="cities" id="cities"></ul>
+        <div class="ac">
+            <input type="text" id="q" placeholder="Начните вводить название города" autocomplete="off">
+            <div class="dd" id="dd"></div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Ссылка для поиска</h2>
+        <div class="msg" id="msg"></div>
+        <div class="link">
+            <div class="ph" id="ph">Ссылка появится после генерации</div>
+            <a id="url" target="_blank" rel="noopener" hidden></a>
+            <button class="btn" id="rem" disabled>Запомнить url</button>
+        </div>
+    </section>
+
+    <button class="gen" id="gen">Сгенерировать новую ссылку</button>
+
+    <div class="export-import">
+        <p>Экспорт сохраняет в JSON-файл все дни, которые вы отметили кнопкой «Запомнить url». Импорт добавляет дни из
+            такого файла в вашу базу — уже известные дни пропускаются.
+            Так можно перенести историю на другое устройство.
+        </p>
+        <span id="cnt"></span>
+        <br>
+        <a id="imp">импорт</a> | <a id="exp">экспорт</a>
+        <input type="file" id="file" accept="application/json,.json" hidden>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
