@@ -164,7 +164,7 @@ function renderLink() {
         a.hidden = true;
         $('ph').hidden = false;
         $('rem').disabled = true;
-        $('rem').textContent = 'Запомнить url';
+        $('rem').textContent = 'Скрыть';
         return
     }
     const u = `https://vk.ru/friends?act=find&city_id=${cur.cityId}&sex=${cur.sex}&birth_day=${cur.d}&birth_month=${cur.m}&birth_year=${cur.y}`;
@@ -174,11 +174,11 @@ function renderLink() {
     $('ph').hidden = true;
     const done = seen.has(keyOf(cur));
     $('rem').disabled = done;
-    $('rem').textContent = done ? 'Запомнено ✓' : 'Запомнить url';
+    $('rem').textContent = done ? 'Скрыто ✓' : 'Скрыть';
 }
 
 function updateCount() {
-    $('cnt').textContent = `Запомнено дней: ${seen.size}`
+    $('cnt').textContent = `Скрыто дней: ${seen.size}`
 }
 
 $('rem').onclick = async () => {
