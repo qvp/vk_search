@@ -178,7 +178,7 @@ function renderLink() {
 }
 
 function updateCount() {
-    $('cnt').textContent = `Скрыто дней: ${seen.size}`
+    $('cnt').textContent = `Скрыто поисковых запросов: ${seen.size}`
 }
 
 $('rem').onclick = async () => {
