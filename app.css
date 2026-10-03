@@ -48,6 +48,10 @@ header {
     margin-right: 6px
 }
 
+.logo span {
+    color: var(--teal);
+}
+
 .star {
     display: inline-flex;
     align-items: stretch;
