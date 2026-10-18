@@ -1,0 +1,23 @@
+[project]
+name = "vk_search"
+version = "0.0.1"
+description = "ВК поиск"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.141.1",
+    "jinja2>=3.1.6",
+    "packaging>=26.3",
+    "pygithub>=2.10.0",
+    "requests>=2.34.2",
+    "sqlalchemy>=2.0.52",
+    "sqlalchemy-utils>=0.42.1",
+    "uvicorn>=0.52.4",
+    "vk>=3.0",
+]
+
+[tool.ruff.lint]
+ignore = [
+    "I001",
+    "TRY002",
+]

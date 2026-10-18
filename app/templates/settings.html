@@ -1,0 +1,802 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .settings-card {
+        margin-top: 6px;
+        padding: 28px 26px 26px;
+        border-radius: var(--radius-lg);
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(22px) saturate(140%);
+        -webkit-backdrop-filter: blur(22px) saturate(140%);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+        animation: settle 0.7s ease 0.05s both;
+    }
+
+    .settings-title {
+        font-weight: 500;
+        font-size: clamp(24px, 4vw, 30px);
+        margin: 0 0 6px;
+    }
+
+    .settings-sub {
+        margin: 0 0 26px;
+        color: var(--text-muted);
+        font-size: 14.5px;
+        line-height: 1.5;
+    }
+
+    .field-group {
+        margin-bottom: 26px;
+    }
+
+    .field-group:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .field-label {
+        display: block;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 10px;
+    }
+
+    .field-hint {
+        margin: 8px 0 0;
+        font-size: 12.5px;
+        color: var(--text-faint);
+    }
+
+    .field-error {
+        margin: 8px 0 0;
+        font-size: 13px;
+        color: var(--error);
+        min-height: 0;
+        display: none;
+    }
+
+    .field-error.is-visible {
+        display: block;
+    }
+
+    /* ---- Text / token fields ---- */
+    .stacked-fields {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .input-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .input-caption {
+        font-size: 12.5px;
+        color: var(--text-faint);
+    }
+
+    .req-mark {
+        color: var(--rose);
+    }
+
+    .opt-mark {
+        color: var(--text-faint);
+        font-weight: 400;
+        font-size: 11px;
+        margin-left: 4px;
+    }
+
+    .text-field, .city-input {
+        width: 100%;
+        padding: 13px 16px;
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--glass-border);
+        outline: none;
+        color: var(--text);
+        font-size: 15px;
+        transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .text-field::placeholder, .city-input::placeholder {
+        color: var(--text-faint);
+    }
+
+    .text-field:focus, .city-input:focus {
+        border-color: rgba(232, 192, 125, 0.5);
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .password-field {
+        position: relative;
+    }
+
+    /* ---- Age range ---- */
+    .age-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .age-field {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 10px 14px;
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--glass-border);
+        transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .age-field:focus-within {
+        border-color: rgba(232, 192, 125, 0.5);
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .age-caption {
+        font-size: 11.5px;
+        color: var(--text-faint);
+        letter-spacing: 0.2px;
+    }
+
+    .age-field input[type="number"] {
+        width: 100%;
+        background: none;
+        border: none;
+        outline: none;
+        color: var(--text);
+        font-size: 18px;
+        font-weight: 600;
+        padding: 0;
+        -moz-appearance: textfield;
+    }
+
+    .age-field input[type="number"]::-webkit-outer-spin-button,
+    .age-field input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .age-sep {
+        color: var(--text-faint);
+        font-size: 18px;
+        flex: none;
+    }
+
+    /* ---- City autocomplete ---- */
+    .autocomplete {
+        position: relative;
+    }
+
+    .autocomplete-list {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + 8px);
+        z-index: 5;
+        max-height: 230px;
+        overflow-y: auto;
+        padding: 6px;
+        border-radius: var(--radius-sm);
+        background: var(--bg-2);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(24px) saturate(140%);
+        -webkit-backdrop-filter: blur(24px) saturate(140%);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    .autocomplete-item {
+        width: 100%;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 12px;
+        border: none;
+        background: none;
+        color: var(--text);
+        font-size: 14.5px;
+        text-align: left;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+
+    .autocomplete-item:hover,
+    .autocomplete-item:focus-visible {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .ac-region {
+        color: var(--text-faint);
+        font-size: 12.5px;
+        flex: none;
+    }
+
+    .autocomplete-empty {
+        padding: 12px;
+        font-size: 13.5px;
+        color: var(--text-faint);
+        text-align: center;
+    }
+
+    /* ---- Selected city chips ---- */
+    .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 8px 7px 14px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(232, 192, 125, 0.16), rgba(255, 255, 255, 0.04));
+        border: 1px solid rgba(232, 192, 125, 0.3);
+        font-size: 13.5px;
+        color: var(--text);
+        animation: settle 0.3s ease both;
+    }
+
+    .chip-remove {
+        flex: none;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text-muted);
+        font-size: 15px;
+        line-height: 1;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .chip-remove:hover {
+        background: rgba(255, 107, 127, 0.25);
+        color: #fff;
+    }
+
+    /* ---- Toggles ---- */
+    .toggle-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 4px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        font-size: 14.5px;
+        cursor: pointer;
+    }
+
+    .toggle-row:last-child {
+        border-bottom: none;
+    }
+
+    .switch {
+        position: relative;
+        flex: none;
+        width: 44px;
+        height: 26px;
+    }
+
+    .switch input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .switch-track {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid var(--glass-border);
+        border-radius: 999px;
+        transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .switch-track::before {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--text);
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .switch input:checked + .switch-track {
+        background: var(--gold);
+        background: rgb(243 205 141 / 0.65);
+        border-color: transparent;
+    }
+
+    .switch input:checked + .switch-track::before {
+        transform: translateX(18px);
+        background: #241017;
+    }
+
+    .switch input:focus-visible + .switch-track {
+        outline: 2px solid var(--gold-bright);
+        outline-offset: 2px;
+    }
+
+    a, a:hover {
+        color: var(--gold);
+        text-decoration: none;
+    }
+
+    /* ---- Actions / spinner ---- */
+    .settings-actions {
+        margin-top: 30px;
+    }
+
+    .spinner {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2px solid rgba(36, 16, 23, 0.35);
+        border-top-color: #241017;
+        animation: spin 0.7s linear infinite;
+        display: none;
+    }
+
+    .btn-primary.is-loading .spinner {
+        display: inline-block;
+    }
+
+    .btn-primary.is-loading .btn-label-text::after {
+        content: "…";
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .form-disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 520px) {
+        body {
+            padding: 24px 12px;
+        }
+
+        .settings-card {
+            padding: 22px 18px 20px;
+        }
+
+        .age-row {
+            gap: 10px;
+        }
+
+        .age-field {
+            padding: 9px 12px;
+        }
+    }
+</style>
+
+<div class="bg-layer">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+</div>
+
+<div class="page">
+
+    <!-- Алерт токен протух -->
+    {% if data.access_token_failed %}
+    <div class="alert alert-error" id="alertError">
+        <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round" style="color:var(--error)">
+            <path d="M12 9v4"/>
+            <path d="M12 17h.01"/>
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>
+        </svg>
+        <div class="alert-body">
+            <p class="alert-title">VK Access token устарел или введен не корректно</p>
+            <p class="alert-text" id="alertErrorText">Обычно время жизни этого токена около 12 часов. Если это произошло просто получите новый токен и сохраните его в настройках</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Алерт поиск завершен -->
+    {% if data.search_done %}
+    <div class="alert alert-error">
+        <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+             stroke-linecap="round" stroke-linejoin="round" style="color:var(--error)">
+            <path d="M12 9v4"/>
+            <path d="M12 17h.01"/>
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>
+        </svg>
+        <div class="alert-body">
+            <p class="alert-title">Измените критерии поиска</p>
+            <p class="alert-text">С текущими настройками поиска больше не удается найти новые контакты, измените список городов или возраст или критерии скрытия</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="settings-card">
+        <h1 class="settings-title">Настройки поиска</h1>
+        <p class="settings-sub">Подробная инструкция находится в папке программы в README.md</p>
+
+        <form id="settingsForm" novalidate>
+
+            <div class="field-group">
+                <label class="field-label">VK Access token <span class="req-mark">*</span></label>
+                <div class="stacked-fields">
+                    <div class="input-wrap">
+                        <span class="input-caption"></span>
+                        <div class="password-field">
+                            <input type="text" id="accessToken" class="text-field"
+                                   placeholder="Введите access token" required
+                                   value="{{ data.access_token or '' }}">
+                            <p class="field-error" id="accessTokenError"></p>
+                        </div>
+                    </div>
+                </div>
+                <p class="field-hint">Например, токен можно получить на <a href="https://vkhost.github.io/" target="_blank">vkhost.github.io</a> (выберите vk.com)</p>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Возраст <span class="req-mark">*</span></label>
+                <div class="age-row">
+                    <div class="age-field">
+                        <span class="age-caption">От</span>
+                        <input type="number" id="ageFrom" min="18" max="99" inputmode="numeric" required
+                               value="{{ data.age_from if data.age_from is not none else 18 }}">
+                    </div>
+                    <span class="age-sep">—</span>
+                    <div class="age-field">
+                        <span class="age-caption">До</span>
+                        <input type="number" id="ageTo" min="18" max="99" inputmode="numeric" required
+                               value="{{ data.age_to if data.age_to is not none else 25 }}">
+                    </div>
+                </div>
+                <p class="field-error" id="ageError"></p>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label" for="cityInput">Города <span class="req-mark">*</span></label>
+                <div class="autocomplete" id="autocomplete">
+                    <input type="text" id="cityInput" class="city-input"
+                           placeholder="Начните вводить город, минимум 3 буквы" autocomplete="off">
+                    <div class="autocomplete-list" id="autocompleteList" hidden></div>
+                </div>
+                <div class="chips" id="cityChips"></div>
+                <p class="field-hint">Можно выбрать от 1 до 20 городов.</p>
+                <p class="field-error" id="cityError"></p>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Что скрывать при поиске контактов</label>
+                <div class="toggle-list">
+                    <label class="toggle-row">
+                        <span>Анкеты с семейным положением "в отношениях"</span>
+                        <span class="switch">
+                <input type="checkbox" id="hideMarried" {% if data.hide_married is sameas false %}{% else %}checked{%
+                       endif %}>
+                <span class="switch-track"></span>
+              </span>
+                    </label>
+                    <label class="toggle-row">
+                        <span>Закрытые страницы (которые могут видеть только друзья)</span>
+                        <span class="switch">
+                <input type="checkbox" id="hidePrivatePage" {% if data.hide_private_page is sameas false %}{% else
+                       %}checked{% endif %}>
+                <span class="switch-track"></span>
+              </span>
+                    </label>
+                    <label class="toggle-row">
+                        <span>С закрытыми личными сообщениями (для тех кто не в друзьях)</span>
+                        <span class="switch">
+                <input type="checkbox" id="hidePrivateMessages" {% if data.hide_private_messages is sameas false %}{%
+                       else %}checked{% endif %}>
+                <span class="switch-track"></span>
+              </span>
+                    </label>
+                    <label class="toggle-row">
+                        <span>Давно не заходившие (более 30 дней)</span>
+                        <span class="switch">
+                <input type="checkbox" id="hideLongtimeVisited" {% if data.hide_longtime_visited is sameas false %}{%
+                       else %}checked{% endif %}>
+                <span class="switch-track"></span>
+              </span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="actions settings-actions">
+                <button type="submit" class="btn btn-ghost" id="saveBtn">
+                    <span class="spinner"></span>
+                    <span class="btn-label-text">Сохранить и перейти на главную</span>
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+  <script id="initial-cities" type="application/json">{{ data.cities_json | default('[]', true) | safe }}</script>
+
+<script>
+
+    // ---------- state ----------
+    const state = {
+        cities: [] // { vk_id, name, region }
+    };
+
+    const el = (id) => document.getElementById(id);
+    const form = el('settingsForm');
+    const accessToken = el('accessToken');
+    const serviceKey = el('serviceKey');
+    const ageFrom = el('ageFrom');
+    const ageTo = el('ageTo');
+    const hideMarried = el('hideMarried');
+    const hidePrivatePage = el('hidePrivatePage');
+    const hidePrivateMessages = el('hidePrivateMessages');
+    const hideLongtimeVisited = el('hideLongtimeVisited');
+    const cityInput = el('cityInput');
+    const autocompleteBox = el('autocomplete');
+    const autocompleteList = el('autocompleteList');
+    const cityChips = el('cityChips');
+    const accessTokenError = el('accessTokenError');
+    const ageError = el('ageError');
+    const cityError = el('cityError');
+    const saveBtn = el('saveBtn');
+
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, (c) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+    }
+
+    function showAlert(id, text) {
+        const box = el(id);
+        if (text !== undefined) {
+            el(id + 'Text').textContent = text;
+        }
+        box.hidden = false;
+    }
+
+    function hideAlert(id) {
+        // el(id).hidden = true;
+    }
+
+    function setFieldError(errorEl, message) {
+        if (message) {
+            errorEl.textContent = message;
+            errorEl.classList.add('is-visible');
+        } else {
+            errorEl.textContent = '';
+            errorEl.classList.remove('is-visible');
+        }
+    }
+
+    function setSaving(isSaving) {
+        saveBtn.disabled = isSaving;
+        saveBtn.classList.toggle('is-loading', isSaving);
+    }
+
+    // ---------- render helpers ----------
+    function renderChips() {
+        cityChips.innerHTML = '';
+        state.cities.forEach((c) => {
+            const chip = document.createElement('span');
+            chip.className = 'chip';
+            chip.innerHTML = `<span>${escapeHtml(c.name)}</span>`;
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'chip-remove';
+            removeBtn.setAttribute('aria-label', 'Убрать город ' + c.name);
+            removeBtn.textContent = '×';
+            removeBtn.addEventListener('click', () => removeCity(c.vk_id));
+            chip.appendChild(removeBtn);
+            cityChips.appendChild(chip);
+        });
+    }
+
+    function removeCity(vkId) {
+        state.cities = state.cities.filter((c) => c.vk_id !== vkId);
+        renderChips();
+    }
+
+    function selectCity(city) {
+        if (state.cities.some((c) => c.vk_id === city.vk_id)) return;
+        if (state.cities.length >= 20) {
+            setFieldError(cityError, 'Можно выбрать не более 20 городов.');
+            return;
+        }
+        setFieldError(cityError, '');
+        state.cities.push(city);
+        cityInput.value = '';
+        hideList();
+        renderChips();
+        cityInput.focus();
+    }
+
+    function hideList() {
+        autocompleteList.hidden = true;
+        autocompleteList.innerHTML = '';
+    }
+
+    function renderList(list) {
+        const available = list.filter((c) => !state.cities.some((s) => s.vk_id === c.vk_id));
+        autocompleteList.innerHTML = '';
+        if (available.length === 0) {
+            autocompleteList.innerHTML = '<div class="autocomplete-empty">Ничего не найдено</div>';
+            autocompleteList.hidden = false;
+            return;
+        }
+        available.forEach((c) => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'autocomplete-item';
+            item.innerHTML =
+                `<span class="ac-name">${escapeHtml(c.name)}</span>` +
+                (c.region ? `<span class="ac-region">${escapeHtml(c.region)}</span>` : '');
+            item.addEventListener('click', () => selectCity(c));
+            autocompleteList.appendChild(item);
+        });
+        autocompleteList.hidden = false;
+    }
+
+    // ---------- autocomplete: GET /city-autocomplete?q= ----------
+    let debounceTimer = null;
+    cityInput.addEventListener('input', () => {
+        const q = cityInput.value.trim();
+        clearTimeout(debounceTimer);
+        if (q.length < 3) {
+            hideList();
+            return;
+        }
+        debounceTimer = setTimeout(() => fetchCities(q), 300);
+    });
+
+    async function fetchCities(q) {
+        try {
+            const res = await fetch('/city-autocomplete?q=' + encodeURIComponent(q));
+            if (!res.ok) {
+                hideList();
+                return;
+            }
+            const list = await res.json();
+            renderList(Array.isArray(list) ? list : []);
+        } catch (err) {
+            hideList();
+        }
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!autocompleteBox.contains(e.target)) hideList();
+    });
+    cityInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') hideList();
+    });
+
+    // ---------- initial data: приходит сразу с сервером, рендерившим страницу ----------
+    // Скалярные поля (токены, возраст, тумблеры) уже подставлены Jinja2 прямо
+    // в HTML-атрибуты выше — здесь их дополнительно грузить не нужно.
+    // Список городов приходит как JSON в <script id="initial-cities">.
+    (function initCities() {
+        try {
+            const raw = el('initial-cities').textContent.trim();
+            const parsed = raw ? JSON.parse(raw) : [];
+            state.cities = Array.isArray(parsed) ? parsed : [];
+        } catch (err) {
+            state.cities = [];
+        }
+        renderChips();
+    })();
+
+    // ---------- validation ----------
+    function validate() {
+        setFieldError(accessTokenError, '');
+        setFieldError(ageError, '');
+        setFieldError(cityError, '');
+        let valid = true;
+
+        if (!accessToken.value.trim()) {
+            setFieldError(accessTokenError, 'Укажите VK access token — без него бот не сможет работать.');
+            valid = false;
+        }
+
+        const from = parseInt(ageFrom.value, 10);
+        const to = parseInt(ageTo.value, 10);
+
+        if (isNaN(from) || from < 18 || from > 99) {
+            setFieldError(ageError, 'Возраст «от» должен быть от 18 до 99 лет.');
+            valid = false;
+        } else if (isNaN(to) || to < 18 || to > 99) {
+            setFieldError(ageError, 'Возраст «до» должен быть от 18 до 99 лет.');
+            valid = false;
+        } else if (from > to) {
+            setFieldError(ageError, '«От» не может быть больше «до».');
+            valid = false;
+        }
+
+        if (state.cities.length < 1) {
+            setFieldError(cityError, 'Выберите хотя бы один город.');
+            valid = false;
+        } else if (state.cities.length > 20) {
+            setFieldError(cityError, 'Можно выбрать не более 20 городов.');
+            valid = false;
+        }
+
+        return valid ? {age_from: from, age_to: to} : null;
+    }
+
+    // ---------- save: POST /settings ----------
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideAlert('alertError');
+
+        const ages = validate();
+        if (!ages) return;
+
+        const payload = {
+            access_token: accessToken.value.trim(),
+            age_from: ages.age_from,
+            age_to: ages.age_to,
+            hide_married: hideMarried.checked,
+            hide_private_page: hidePrivatePage.checked,
+            hide_private_messages: hidePrivateMessages.checked,
+            hide_longtime_visited: hideLongtimeVisited.checked,
+            cities: state.cities.map((c) => c.vk_id)
+        };
+
+        setSaving(true);
+        try {
+            const res = await fetch('/settings', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+
+            if (res.status === 422) {
+                const err = await res.json();
+                const msg = (err.detail || []).map((d) => d.msg).join(' ');
+                showAlert('alertError', msg || 'Проверьте правильность заполнения формы.');
+            } else if (!res.ok) {
+                showAlert('alertError', 'Не удалось сохранить настройки. Попробуйте ещё раз.');
+            } else {
+                // Переадресовываем на главную если настройки сохранились
+                location.href = '/';
+            }
+        } catch (err) {
+            showAlert('alertError', 'Проблема с соединением. Проверьте интернет и попробуйте снова.');
+        } finally {
+            setSaving(false);
+        }
+    });
+</script>
+
+{% endblock %}

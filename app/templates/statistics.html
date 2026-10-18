@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .stats-card {
+        margin-top: 6px;
+        padding: 28px 26px 26px;
+        border-radius: var(--radius-lg);
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(22px) saturate(140%);
+        -webkit-backdrop-filter: blur(22px) saturate(140%);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+        animation: settle 0.7s ease 0.05s both;
+    }
+
+    .stats-title {
+        font-weight: 500;
+        font-size: clamp(24px, 4vw, 30px);
+        margin: 0 0 6px;
+    }
+
+    .stats-sub {
+        margin: 0 0 24px;
+        color: var(--text-muted);
+        font-size: 14.5px;
+        line-height: 1.5;
+    }
+
+    /* ---- Two donut charts in a row ---- */
+    .charts-row {
+        display: flex;
+        gap: 14px;
+    }
+
+    .chart-tile {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 12px 16px;
+        border-radius: var(--radius-md);
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--glass-border);
+    }
+
+    .chart-title {
+        margin: 0;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-align: center;
+        letter-spacing: 0.1px;
+    }
+
+    .donut-wrap {
+        position: relative;
+        width: clamp(96px, 30vw, 140px);
+        height: clamp(96px, 30vw, 140px);
+    }
+
+    .donut {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+
+    .donut-track {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.08);
+        stroke-width: 14;
+    }
+
+    .donut-seg {
+        fill: none;
+        stroke-width: 14;
+        stroke-linecap: round;
+    }
+
+    .donut-seg-viewed {
+        stroke: var(--stat-bg);
+    }
+
+    .donut-seg-written {
+        stroke: var(--gold-bright);
+    }
+
+    .donut-center {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0 6px;
+    }
+
+    .donut-center-value {
+        font-style: italic;
+        font-weight: 500;
+        font-size: clamp(16px, 5vw, 22px);
+        line-height: 1;
+    }
+
+    .donut-center-label {
+        margin-top: 4px;
+        font-size: 10.5px;
+        color: var(--text-faint);
+    }
+
+    .chart-legend {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .legend-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12.5px;
+    }
+
+    .legend-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex: none;
+    }
+
+    .legend-dot-viewed {
+        background: var(--stat-bg);
+    }
+
+    .legend-dot-written {
+        background: var(--gold-bright);
+    }
+
+    .legend-text {
+        flex: 1;
+        color: var(--text-muted);
+        min-width: 0;
+    }
+
+    .legend-value {
+        font-weight: 600;
+        color: var(--text);
+        flex: none;
+    }
+
+    /* ---- 30-day activity strip ---- */
+    .daily-section {
+        margin-top: 28px;
+    }
+
+    .section-label {
+        margin: 0 0 2px;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .section-sub {
+        margin: 0 0 16px;
+        font-size: 12px;
+        color: var(--text-faint);
+    }
+
+    .daily-grid {
+        display: grid;
+        grid-template-columns:repeat(30, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .day-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .day-track {
+        width: 100%;
+        height: 64px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+    }
+
+    .day-bar {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        border-radius: 4px 4px 2px 2px;
+        overflow: hidden;
+    }
+
+    .day-seg-viewed {
+        background: var(--stat-bg);
+    }
+
+    .day-seg-written {
+        background: var(--gold-bright);
+    }
+
+    .day-empty {
+        align-self: flex-end;
+        width: 100%;
+        height: 8px;
+        border: 1px dashed rgba(255, 255, 255, 0.22);
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .daily-edges {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--text-faint);
+    }
+
+    .daily-legend {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 16px;
+        font-size: 12.5px;
+        color: var(--text-muted);
+    }
+
+    .daily-legend .legend-dot {
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+    }
+
+    .empty-note {
+        padding: 18px;
+        text-align: center;
+        font-size: 13.5px;
+        color: var(--text-faint);
+        border: 1px dashed rgba(255, 255, 255, 0.16);
+        border-radius: var(--radius-sm);
+    }
+
+    .actions {
+        padding-top: 20px;
+    }
+
+    a, a:hover {
+        color: var(--gold);
+    }
+
+    .data-export {
+        margin-top: 20px;
+    }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 520px) {
+        body {
+            padding: 24px 12px;
+        }
+
+        .stats-card {
+            padding: 22px 16px 20px;
+        }
+
+        .charts-row {
+            gap: 10px;
+        }
+
+        .chart-tile {
+            padding: 14px 8px 12px;
+            gap: 10px;
+        }
+
+        .daily-grid {
+            gap: 4px;
+        }
+
+        .day-track {
+            height: 52px;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .legend-text {
+            font-size: 11.5px;
+        }
+
+        .chart-title {
+            font-size: 11.5px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="bg-layer">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-orb orb-3"></div>
+</div>
+
+{% macro donut_chart(title, viewed, written, center_label) %}
+{% set total = viewed + written %}
+{% set r = 52 %}
+{% set circumference = 2 * 3.14159265 * r %}
+{% set viewed_pct = (viewed / total * 100) if total > 0 else 0 %}
+{% set written_pct = (written / total * 100) if total > 0 else 0 %}
+{% set viewed_dash = circumference * viewed_pct / 100 %}
+{% set written_dash = circumference * written_pct / 100 %}
+<div class="chart-tile">
+    <p class="chart-title">{{ title }}</p>
+    <div class="donut-wrap">
+        <svg class="donut" viewBox="0 0 120 120">
+            <circle class="donut-track" cx="60" cy="60" r="{{ r }}"></circle>
+            {% if total > 0 %}
+            <circle class="donut-seg donut-seg-viewed" cx="60" cy="60" r="{{ r }}"
+                    transform="rotate(-90 60 60)"
+                    stroke-dasharray="{{ viewed_dash }} {{ circumference - viewed_dash }}"></circle>
+            <circle class="donut-seg donut-seg-written" cx="60" cy="60" r="{{ r }}"
+                    transform="rotate(-90 60 60)"
+                    stroke-dasharray="{{ written_dash }} {{ circumference - written_dash }}"
+                    stroke-dashoffset="{{ -viewed_dash }}"></circle>
+            {% endif %}
+        </svg>
+        <div class="donut-center">
+            <span class="donut-center-value">{{ written_pct | round(0, 'floor') | int }}%</span>
+            <span class="donut-center-label">{{ center_label }}</span>
+        </div>
+    </div>
+    <div class="chart-legend">
+        <div class="legend-row">
+            <span class="legend-dot legend-dot-viewed"></span>
+            <span class="legend-text">Просмотрено</span>
+            <span class="legend-value">{{ viewed }}</span>
+        </div>
+        <div class="legend-row">
+            <span class="legend-dot legend-dot-written"></span>
+            <span class="legend-text">Написал</span>
+            <span class="legend-value">{{ written }}</span>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+<div class="page">
+
+    <div class="stats-card">
+        <h1 class="stats-title">Статистика</h1>
+
+        {% if stats.new_version %}
+        <p class="stats-sub">ℹ️Доступна новая версия <b>{{ stats.new_version }}</b> (ваша версия {{ stats.current_version }}) <a href="https://github.com/qvp/vk_search" target="_blank">подробнее →</a></p>
+        {% endif %}
+
+        <p class="stats-sub">Сколько анкет вы посмотрели и кому написали.</p>
+
+        <div class="charts-row">
+            {{ donut_chart('За всё время', stats.viewed_total, stats.written_total, 'написал') }}
+            {{ donut_chart('Последние 30 дней', stats.viewed_30d, stats.written_30d, 'написал') }}
+        </div>
+
+        <div class="daily-section">
+            <p class="section-label">Активность по дням</p>
+            <p class="section-sub">За последние 30 дней. Пустой столбик — в этот день не было активности.</p>
+
+            {% if stats.daily %}
+            {% set ns = namespace(max_total=0) %}
+            {% for day in stats.daily %}
+            {% set day_total = day.viewed + day.written %}
+            {% if day_total > ns.max_total %}{% set ns.max_total = day_total %}{% endif %}
+            {% endfor %}
+
+            <div class="daily-grid">
+                {% for day in stats.daily %}
+                {% set day_total = day.viewed + day.written %}
+                <div class="day-col"
+                     title="{{ day.label or day.date }}: просмотрено {{ day.viewed }}, написано {{ day.written }}">
+                    <div class="day-track">
+                        {% if day_total == 0 %}
+                        <div class="day-empty"></div>
+                        {% else %}
+                        {% set bar_height = (day_total / ns.max_total * 100) if ns.max_total > 0 else 0 %}
+                        {% set viewed_share = (day.viewed / day_total * 100) %}
+                        {% set written_share = (day.written / day_total * 100) %}
+                        <div class="day-bar" style="height:{{ bar_height }}%">
+                            <span class="day-seg-viewed" style="height:{{ viewed_share }}%"></span>
+                            <span class="day-seg-written" style="height:{{ written_share }}%"></span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="daily-edges">
+                <span>{{ stats.daily[0].label or stats.daily[0].date }}</span>
+                <span>{{ stats.daily[-1].label or stats.daily[-1].date }}</span>
+            </div>
+
+            <div class="daily-legend">
+                <span><span class="legend-dot legend-dot-viewed"></span>Просмотрено</span>
+                <span><span class="legend-dot legend-dot-written"></span>Написал</span>
+            </div>
+            {% else %}
+            <p class="empty-note">Данных за последние 30 дней пока нет.</p>
+            {% endif %}
+
+            <div class="data-export">
+                <p class="section-label">Экспорт данных</p>
+                <p class="section-sub">Вы можете <a href="/data-export">скачать</a> данные в формате csv и открыть их в Excel или Гугл документах.</p>
+            </div>
+
+            <div class="actions">
+                <a href="/" class="btn btn-ghost">
+                    <span class="btn-label-text">Перейти на главную</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

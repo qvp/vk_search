@@ -1,0 +1,17 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.idea
+
+# database
+database.sqlite
+database.sqlite-shm
+database.sqlite-wal
+settings.json
