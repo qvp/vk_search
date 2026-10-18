@@ -1,10 +1,13 @@
 ### ВК поиск
+[![Python Version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fqvp%2Fvk_search%2Fmain%2Fpyproject.toml&logo=python&logoColor=white)](https://www.python.org/)
+[![GitHub Release](https://img.shields.io/github/v/release/qvp/vk_search?logo=github&label=version)](https://github.com/qvp/vk_search/releases/latest)
+
 Ваш личный сайт знакомств - без ограничений и бесплатно.  
 Работает на базе ВКонтакте прямо у вас на компьютере.  
 
 ### Установка
 
-Установка выполняется один раз. При следующих запусках достаточно выполнить одну команду.
+Установка выполняется один раз. При следующих запусках достаточно выполнить одну команду из раздела "Запуск".
 
 1. **Установить Python** - скачайте установщик с [официального сайта](https://www.python.org/downloads/). При установке Windows, если появится опция `Add python.exe to PATH`, включите её.
 2. **Установить UV** - следуйте инструкции на [официальном сайте UV](https://docs.astral.sh/uv/getting-started/installation/). Для Windows выберите способ установки через `pip`.
