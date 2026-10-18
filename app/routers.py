@@ -12,6 +12,7 @@ from app import vkontakte
 from app.models import Act
 from app import task, crud
 from app.db import get_db
+from app.paths import TEMPLATES_DIR
 from app import stats
 from app import settings
 from app import cities
@@ -21,7 +22,7 @@ from app import version
 
 
 router = APIRouter()
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 SHOW_FAKE_DATA = False
 

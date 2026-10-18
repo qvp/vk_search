@@ -1,10 +1,9 @@
-from pathlib import Path
-
 from sqlalchemy import create_engine, event, inspect
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
+from app.paths import DB_PATH
 
-DB_PATH = Path(__file__).resolve().parent.parent / "database.sqlite"
+
 DB_URL = f"sqlite:///{DB_PATH}"
 
 

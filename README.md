@@ -41,3 +41,6 @@
 ![Главная](screenshots/main.jpg)
 ![Настройки](screenshots/settings.jpg)
 ![Статистика](screenshots/stats.jpg)
+
+### Сборка exe
+`uv run pyinstaller --clean --noconfirm vk_search.spec`

@@ -4,8 +4,10 @@ from urllib.parse import urlparse, parse_qs
 from pydantic import BaseModel, Field, model_validator
 from pydantic import ValidationError
 
+from app.paths import SETTINGS_PATH
 
-FILE_PATH: str = "settings.json"
+
+FILE_PATH: Path = SETTINGS_PATH
 
 
 class Settings(BaseModel):

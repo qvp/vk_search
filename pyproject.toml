@@ -21,3 +21,9 @@ ignore = [
     "I001",
     "TRY002",
 ]
+
+[dependency-groups]
+dev = [
+    "pillow>=13.0.0",
+    "pyinstaller>=6.22.3",
+]
